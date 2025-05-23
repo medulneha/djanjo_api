@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Map Locations</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/854/854878.png">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map { height: 500px; }
+    #stats {#stats {
+        margin: 20px auto;
+        width: 90%;
+        max-width: 400px;
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        font-family: 'Arial', sans-serif;
+        color: #2c3e50;
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        gap: 20px;
+      }
+      
+      .stat-item {
+        text-align: center;
+        flex: 1;
+      }
+      
+      .stat-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+        color: #2980b9;
+      }
+      
+      .stat-label {
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+      
+      .stat-value {
+        font-size: 22px;
+        font-weight: bold;
+        color: #34495e;
+      }
+       }
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+          background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1950&q=80') no-repeat center center fixed;
+          background-size: cover;
+          overflow-x: hidden;
+          position: relative;
+        }
+      
+        /* Optional blur overlay */
+        body::before {
+          content: "";
+          position: fixed;
+          top: 0;
+          left: 0;
+          height: 100%;
+          width: 100%;
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
+          z-index: -1;
+        }
+      
+        #main-heading {
+          text-align: center;
+          font-size: 36px;
+          margin-top: 20px;
+          font-family: 'Georgia', serif;
+          color: #2c3e50;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+      
+        #map {
+          height: 500px;
+          margin: 30px auto;
+          width: 90%;
+          max-width: 1000px;
+          border-radius: 12px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          z-index: 1;
+          position: relative;
+        }
+      </style>
+      
+      </style>
+      
+      </style>
+      
+  </style>
+</head>
+<body>
+  <h2 id="main-heading">Locations Map</h2>
+  <div id="map"></div>
+  <div id="stats"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+  
+    var map = L.map('map').setView([40.75, -73.98], 12);
+
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(map);
+
+    
+    fetch('/api/locations/')
+      .then(response => response.json())
+      .then(data => {
+        L.geoJSON(data, {
+          onEachFeature: function (feature, layer) {
+            var popupContent = "<b>" + feature.properties.name + "</b><br>Category: " + feature.properties.category;
+            layer.bindPopup(popupContent);
+          }
+        }).addTo(map);
+      })
+      .catch(error => {
+        console.error('Error loading locations:', error);
+      });
+
+   
+      fetch('/api/locations/stats/')
+      .then(response => response.json())
+      .then(stats => {
+        document.getElementById('stats').innerHTML = `
+          <div class="stat-item">
+            <div class="stat-icon">📍</div>
+            <div class="stat-label">Total Locations</div>
+            <div class="stat-value">${stats.total_locations}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-label">Most Common Category</div>
+            <div class="stat-value">${stats.most_common_category} (${stats.most_common_count})</div>
+          </div>
+        `;
+      })
+      .catch(error => {
+        console.error('Error loading stats:', error);
+      });
+    
+  </script>
+</body>
+</html>
